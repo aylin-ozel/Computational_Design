@@ -56,44 +56,44 @@ class OrganicGrowthSystem:
         if not curr_dir.Unitize():
             return lines
 
-        # Rastgele segment sayısı
+      
         num_segments = random.randint(
             self.branch_segment_min, self.branch_segment_max)
 
-        # İlk segment - büyük ve rastgele
+       
         initial_segment_length = self._get_random_length(
             self.min_L1, self.max_L1, iter_idx)
 
-        # Scale factor - içe veya dışa
+        
         segment_scale = random.uniform(
             self.branch_scale_min, self.branch_scale_max)
 
-        # Dönüş açısı
+        
         angle = -math.pi / 2 if is_clockwise else math.pi / 2
 
         current_length = initial_segment_length
 
         for i in range(num_segments):
-            # 90 derece dön
+           
             curr_dir.Rotate(angle, rg.Vector3d.ZAxis)
 
-            # Segment uzunluğu
+            
             if i == 0:
                 seg_len = current_length
             else:
                 seg_len = current_length * random.uniform(0.7, 1.1)
 
-            # Yeni nokta - Z SABİT KALIYOR (düz katman)
+            
             new_p = rg.Point3d(
                 curr_pos.X + curr_dir.X * seg_len,
                 curr_pos.Y + curr_dir.Y * seg_len,
-                curr_pos.Z  # ← Z DEĞİŞMİYOR!
+                curr_pos.Z  
             )
 
             lines.append(rg.LineCurve(curr_pos, new_p))
             curr_pos = new_p
 
-            # Bir sonraki segment için
+            
             current_length *= segment_scale
 
         return lines
@@ -103,7 +103,7 @@ class OrganicGrowthSystem:
             self.current_curve.Domain = rg.Interval(0, 1)
             total_len = self.current_curve.GetLength()
 
-            # 1. GRADUAL TRIM
+            # GRADUAL TRIM
             potential_trim = self.current_trim + (total_len * self.decay_rate)
             resulting_len = total_len - (2 * potential_trim)
 
@@ -121,20 +121,20 @@ class OrganicGrowthSystem:
             if not shrunk_curve:
                 break
 
-            # 2. FLAT RANDOM BRANCHING
+            # FLAT RANDOM BRANCHING
             to_join = [shrunk_curve]
             success, polyline = shrunk_curve.TryGetPolyline()
 
             if success and polyline.Count >= 2:
                 p0, p_last = polyline[0], polyline[polyline.Count - 1]
 
-                # Branch uzunlukları tamamen random
+                
                 branch_len_start = random.uniform(
                     self.min_L1 * 0.8, self.max_L1 * 1.2)
                 branch_len_end = random.uniform(
                     self.min_L1 * 0.8, self.max_L1 * 1.2)
 
-                # Daha fazla branch
+               
                 branch_prob = min(self.prob * 1.3, 0.9)
 
                 if random.random() < branch_prob:
@@ -160,7 +160,7 @@ class OrganicGrowthSystem:
                     )
                     to_join.extend(branches)
 
-            # 3. JOIN AND OFFSET
+            # JOIN AND OFFSET
             joined = rg.Curve.JoinCurves(to_join, 0.01)
             if not joined:
                 break
@@ -181,7 +181,7 @@ class OrganicGrowthSystem:
             else:
                 self.current_curve = temp_curve
 
-            # 4. Z-MOVE SADECE BURADA - TÜM KATMAN BİRDEN YÜKSELİR
+            # Z-MOVE SADECE BURADA - TÜM KATMAN BİRDEN YÜKSELİR
             self.current_curve.Transform(
                 rg.Transform.Translation(0, 0, self.z_dist))
             self.history.append(self.current_curve.DuplicateCurve())
@@ -204,18 +204,18 @@ params = {
     'decay_rate': 0.01,
     'taper_factor': 0.98,
 
-    # RANDOM BRANCH PARAMETRELERİ
-    'min_L1': 2.5,       # Büyük başlangıç
-    'max_L1': 6.0,       # Çok büyük branch'lar
+    
+    'min_L1': 2.5,       
+    'max_L1': 6.0,       
     'min_L3': 1.5,
     'max_L3': 4.0,
-    'jitter': 0.35,      # Fazla varyasyon
+    'jitter': 0.35,      
 
     # BRANCH SCALE
-    'branch_scale_min': 0.65,   # Hızlı küçülme
-    'branch_scale_max': 0.95,   # Yavaş küçülme
+    'branch_scale_min': 0.65,   
+    'branch_scale_max': 0.95,   
 
-    # SEGMENT SAYISI
+    # SEGMENT 
     'branch_segment_min': 3,
     'branch_segment_max': 6,
 }
